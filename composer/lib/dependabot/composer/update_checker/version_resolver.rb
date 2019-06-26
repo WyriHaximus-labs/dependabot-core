@@ -40,16 +40,14 @@ module Dependabot
           return if version.nil?
           return unless Composer::Version.correct?(version)
 
-          Composer::Version.new(version, composer_platform_extensions)
+          Composer::Version.new(Array[version, composer_platform_extensions.join(',')].join(';'))
         rescue Dependabot::DependencyFileMissingExtension => missingExtionException
           composer_platform_extensions.push(*missingExtionException.extensions)
-          puts composer_platform_extensions.join(', ') 
           return fetch_latest_resolvable_version
         end
 
         def fetch_latest_resolvable_version_string
           base_directory = dependency_files.first.directory
-          puts base_directory
           SharedHelpers.in_a_temporary_directory(base_directory) do
             File.write("composer.json", prepared_composer_json_content)
             File.write("composer.lock", lockfile.content) if lockfile

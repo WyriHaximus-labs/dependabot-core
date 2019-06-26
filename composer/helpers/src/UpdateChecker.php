@@ -44,16 +44,6 @@ class UpdateChecker
             $io->loadConfiguration($config);
         }
 
-        $config->merge(
-            [
-                'config' => [
-                    'platform' => [
-                            'ext-parallel' => '0.0.3',
-                        ] + $config->get('platform'),
-                ],
-            ]
-        );
-
         $installationManager = new DependabotInstallationManager();
         $install = new Installer(
             $io,
@@ -79,19 +69,8 @@ class UpdateChecker
             ->setRunScripts(false)
             ->setIgnorePlatformRequirements(false);
 
-        /*
-         * If a platform is set we assume people know what they are doing and
-         * we respect the setting.
-         * If no platform is set we ignore it so that the php we run as doesn't
-         * interfere with resolution.
-         */
-//        if ($config->get('platform') === []) {
-//            $install->setIgnorePlatformRequirements(true);
-//        } else {
-//            $install->setIgnorePlatformRequirements(false);
-//        }
-
         $install->run();
+
         $install
             ->setConfig($originalConfig)
             ->setUpdateWhitelist(['lock']);

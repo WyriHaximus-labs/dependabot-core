@@ -10,10 +10,9 @@ require "rubygems_version_patch"
 module Dependabot
   module Composer
     class Version < Gem::Version
-      def initialize(version, extensions = [])
+      def initialize(version)
         @version_string = version.to_s
-        @extensions = extensions
-        super(version)
+        super(version.split(';').at(0))
       end
 
       def to_s

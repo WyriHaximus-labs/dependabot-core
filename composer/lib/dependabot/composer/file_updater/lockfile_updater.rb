@@ -59,7 +59,7 @@ module Dependabot
               args: [
                 Dir.pwd,
                 dependency.name,
-                [dependency.version. dependency.version.extensions],
+                dependency.version,
                 git_credentials,
                 registry_credentials
               ]
