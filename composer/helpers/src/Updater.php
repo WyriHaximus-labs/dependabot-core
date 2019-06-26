@@ -21,7 +21,7 @@ class Updater
 
         $io = new ExceptionIO();
         $composer = Factory::create($io);
-        $config = $composer->getConfig();
+        $originalConfig = $config = $composer->getConfig();
         $httpBasicCredentials = [];
 
         $pm = new DependabotPluginManager($io, $composer, null, false);
@@ -41,6 +41,16 @@ class Updater
                 'password' => $cred['password'],
             ];
         }
+
+        $config->merge(
+            [
+                'config' => [
+                    'platform' => [
+                        'ext-parallel' => '0.0.2',
+                    ] + $config->get('platform'),
+                ],
+            ]
+        );
 
         if ($httpBasicCredentials) {
             $config->merge(
@@ -74,7 +84,8 @@ class Updater
             ->setWhitelistTransitiveDependencies(true)
             ->setExecuteOperations(false)
             ->setDumpAutoloader(false)
-            ->setRunScripts(false);
+            ->setRunScripts(false)
+            ->setIgnorePlatformRequirements(false);
 
         /*
          * If a platform is set we assume people know what they are doing and
@@ -82,12 +93,17 @@ class Updater
          * If no platform is set we ignore it so that the php we run as doesn't
          * interfere with resolution.
          */
-        if ($config->get('platform') === []) {
-            $install->setIgnorePlatformRequirements(true);
-        } else {
-            $install->setIgnorePlatformRequirements(false);
-        }
+//        if ($config->get('platform') === []) {
+//            $install->setIgnorePlatformRequirements(true);
+//        } else {
+//            $install->setIgnorePlatformRequirements(false);
+//        }
 
+        $install->run();
+
+        $install
+            ->setConfig($originalConfig)
+            ->setUpdateWhitelist(['lock']);
         $install->run();
 
         $result = [

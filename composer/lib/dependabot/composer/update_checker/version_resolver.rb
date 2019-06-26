@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "dependabot/errors"
+require "json"
 require "dependabot/shared_helpers"
 require "dependabot/composer/update_checker"
 require "dependabot/composer/version"
@@ -15,11 +17,12 @@ module Dependabot
 
         def initialize(credentials:, dependency:, dependency_files:,
                        requirements_to_unlock:, latest_allowable_version:)
-          @credentials              = credentials
-          @dependency               = dependency
-          @dependency_files         = dependency_files
-          @requirements_to_unlock   = requirements_to_unlock
-          @latest_allowable_version = latest_allowable_version
+          @credentials                  = credentials
+          @dependency                   = dependency
+          @dependency_files             = dependency_files
+          @requirements_to_unlock       = requirements_to_unlock
+          @latest_allowable_version     = latest_allowable_version
+          @composer_platform_extensions = []
         end
 
         def latest_resolvable_version
@@ -29,18 +32,24 @@ module Dependabot
         private
 
         attr_reader :credentials, :dependency, :dependency_files,
-                    :requirements_to_unlock, :latest_allowable_version
+                    :requirements_to_unlock, :latest_allowable_version,
+                    :composer_platform_extensions
 
         def fetch_latest_resolvable_version
           version = fetch_latest_resolvable_version_string
           return if version.nil?
           return unless Composer::Version.correct?(version)
 
-          Composer::Version.new(version)
+          Composer::Version.new(version, composer_platform_extensions)
+        rescue Dependabot::DependencyFileMissingExtension => missingExtionException
+          composer_platform_extensions.push(*missingExtionException.extensions)
+          puts composer_platform_extensions.join(', ') 
+          return fetch_latest_resolvable_version
         end
 
         def fetch_latest_resolvable_version_string
           base_directory = dependency_files.first.directory
+          puts base_directory
           SharedHelpers.in_a_temporary_directory(base_directory) do
             File.write("composer.json", prepared_composer_json_content)
             File.write("composer.lock", lockfile.content) if lockfile
@@ -85,6 +94,14 @@ module Dependabot
             /"#{Regexp.escape(dependency.name)}"\s*:\s*".*"/,
             %("#{dependency.name}": "#{updated_version_requirement_string}")
           )
+
+          json = JSON.parse(content)
+
+          composer_platform_extensions.each do |extension| 
+            json["config"]["platform"][extension] = '0.0.1'
+          end
+
+          content = JSON.generate(json)
         end
 
         def updated_version_requirement_string
@@ -145,7 +162,7 @@ module Dependabot
                   "config in your composer.json to allow Dependabot to run: "\
                   "#{extensions.join(', ')}.\n\n"\
                   "The full error raised was:\n\n#{error.message}"
-            raise Dependabot::DependencyFileNotResolvable, msg
+            raise Dependabot::DependencyFileMissingExtension.new(msg, extensions)
           elsif error.message.include?("package requires php") ||
                 error.message.include?("cannot require itself") ||
                 error.message.include?('packages.json" file could not be down')
