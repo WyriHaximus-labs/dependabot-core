@@ -40,10 +40,13 @@ module Dependabot
           return if version.nil?
           return unless Composer::Version.correct?(version)
 
-          Composer::Version.new(Array[version, composer_platform_extensions.join(',')].join(';'))
-        rescue Dependabot::DependencyFileMissingExtension => missingExtionException
-          composer_platform_extensions.push(*missingExtionException.extensions)
-          return fetch_latest_resolvable_version
+          Composer::Version.new(Array[
+            version,
+            composer_platform_extensions.join(",")
+          ].join(";"))
+        rescue Dependabot::DependencyFileMissingExtension => e
+          composer_platform_extensions.push(*e.extensions)
+          fetch_latest_resolvable_version
         end
 
         def fetch_latest_resolvable_version_string
@@ -95,11 +98,11 @@ module Dependabot
 
           json = JSON.parse(content)
 
-          composer_platform_extensions.each do |extension| 
-            json["config"]["platform"][extension] = '0.0.1'
+          composer_platform_extensions.each do |extension|
+            json["config"]["platform"][extension] = "0.0.1"
           end
 
-          content = JSON.generate(json)
+          JSON.generate(json)
         end
 
         def updated_version_requirement_string
@@ -160,7 +163,10 @@ module Dependabot
                   "config in your composer.json to allow Dependabot to run: "\
                   "#{extensions.join(', ')}.\n\n"\
                   "The full error raised was:\n\n#{error.message}"
-            raise Dependabot::DependencyFileMissingExtension.new(msg, extensions)
+            raise Dependabot::DependencyFileMissingExtension.new(
+              msg, 
+              extensions
+            )
           elsif error.message.include?("package requires php") ||
                 error.message.include?("cannot require itself") ||
                 error.message.include?('packages.json" file could not be down')
