@@ -187,10 +187,15 @@ RSpec.describe Dependabot::Composer::UpdateChecker do
           it { is_expected.to be >= Gem::Version.new("5.4.36") }
           it { is_expected.to be < Gem::Version.new("5.5.0") }
 
-          context "and an extension is specified that we don't have it pretends the missing extension is there" do
+          context "and an extension is specified that we don't have" do
             let(:manifest_fixture_name) { "missing_extension" }
 
-            it { is_expected.to be >= Dependabot::Composer::Version.new("5.4.36") }
+            context "it pretends the missing extension is there" do 
+              it { 
+                is_expected.to be >= 
+                  Dependabot::Composer::Version.new("5.4.36") 
+              }
+            end
           end
 
           context "but the platform requirement only specifies an extension" do
