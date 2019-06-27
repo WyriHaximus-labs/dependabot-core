@@ -187,19 +187,10 @@ RSpec.describe Dependabot::Composer::UpdateChecker do
           it { is_expected.to be >= Gem::Version.new("5.4.36") }
           it { is_expected.to be < Gem::Version.new("5.5.0") }
 
-          context "and an extension is specified that we don't have" do
+          context "and an extension is specified that we don't have it pretends the missing extension is there" do
             let(:manifest_fixture_name) { "missing_extension" }
 
-            it "raises a helpful error" do
-              expect { checker.latest_resolvable_version }.
-                to raise_error do |error|
-                  expect(error).to be_a(Dependabot::DependencyFileNotResolvable)
-                  expect(error.message).
-                    to include("extension ext-maxminddb * is missing")
-                  expect(error.message).
-                    to include("to allow Dependabot to run: ext-maxminddb.\n")
-                end
-            end
+            it { is_expected.to be >= Dependabot::Composer::Version.new("5.4.36") }
           end
 
           context "but the platform requirement only specifies an extension" do

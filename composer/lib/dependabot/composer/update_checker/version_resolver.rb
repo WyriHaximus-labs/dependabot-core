@@ -99,7 +99,14 @@ module Dependabot
           json = JSON.parse(content)
 
           composer_platform_extensions.each do |extension|
-            json["config"]["platform"][extension] = "0.0.1"
+            if json["config"].nil? === true or json.include? "config" === false
+              json["config"] = Hash.new
+            end
+            if json["config"]["platform"].nil? === true or 
+               json["config"].include? "platform" === false
+              json["config"]["platform"] = Hash.new
+            end
+            json["config"]["platform"][extension] = "3.1.13"
           end
 
           JSON.generate(json)
@@ -164,7 +171,7 @@ module Dependabot
                   "#{extensions.join(', ')}.\n\n"\
                   "The full error raised was:\n\n#{error.message}"
             raise Dependabot::DependencyFileMissingExtension.new(
-              msg, 
+              msg,
               extensions
             )
           elsif error.message.include?("package requires php") ||

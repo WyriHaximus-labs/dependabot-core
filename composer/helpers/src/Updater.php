@@ -12,8 +12,11 @@ class Updater
     public static function update(array $args): array
     {
         [$workingDirectory, $dependencyName, $dependencyVersionAndExtentions, $gitCredentials, $registryCredentials] = $args;
-        [$dependencyVersion, $extensions] = explode(';', $dependencyVersionAndExtentions);
-        $extensions = explode(',', $extensions);
+        [$dependencyVersion, $extensionsString] = explode(';', $dependencyVersionAndExtentions);
+        $extensions = [];
+        if ($extensionsString !== null && strlen($extensionsString) > 0) {
+            $extensions = explode(',', $extensionsString);
+        }
 
         // Change working directory to the one provided, this ensures that we
         // install dependencies into the working dir, rather than a vendor folder
