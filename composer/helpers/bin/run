@@ -76,8 +76,7 @@ try {
             exit(1);
     }
 } catch (\Exception $e) {
-    fwrite(STDOUT, json_encode(['error' => (string)$e]));
-    //fwrite(STDOUT, json_encode(['error' => $e->getMessage()]));
+    fwrite(STDOUT, json_encode(['error' => $e->getMessage()]));
     error_clear_last();
     exit(1);
 }
