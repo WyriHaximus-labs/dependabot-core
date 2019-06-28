@@ -105,7 +105,7 @@ module Dependabot
             extension = extension_with_version.split(" ").at(0)
             extension_version = extension_with_version.split(" ").at(1)
             extension_version = "0.0.1" if extension_version == "*"
-            extension_version = extension_version.gsub(/[^0-9,\.]/, '')
+            extension_version = extension_version.gsub(/[^0-9,\.]/, "")
             json["config"]["platform"][extension] = extension_version
             pp
           end
@@ -165,7 +165,7 @@ module Dependabot
             raise Dependabot::DependencyFileNotResolvable, sanitized_message
           elsif error.message.include?("requested PHP extension")
             extensions = error.message.scan(/\sext\-.*?\s/).map(&:strip).uniq
-            extensionsWithVersions = error.message.scan(
+            extensions_with_versions = error.message.scan(
               /\sext\-.*? .*?\s/
             ).map(&:strip).uniq
             msg = "Dependabot's installed extensions didn't match those "\
