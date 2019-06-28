@@ -98,10 +98,18 @@ module Dependabot
 
           json = JSON.parse(content)
 
-          composer_platform_extensions.each do |extension|
+          composer_platform_extensions.each do |extension_with_version|
             json["config"] = {} if json["config"].nil? == true
-            json["config"]["platform"] = {} if json["config"].include? "platform" == false
-            json["config"]["platform"][extension] = "0.0.1"
+            bool = json["config"].include? "platform"
+            json["config"]["platform"] = {} if bool == false
+            extension = extension_with_version.split(" ").at(0)
+            extension_version = extension_with_version.split(" ").at(1)
+            if extension_version === "*"
+              extension_version = "0.0.1"
+            end
+            extension_version = extension_version.gsub(/[^0-9,\.]/, '')
+            json["config"]["platform"][extension] = extension_version
+            pp
           end
 
           JSON.generate(json)
@@ -159,6 +167,7 @@ module Dependabot
             raise Dependabot::DependencyFileNotResolvable, sanitized_message
           elsif error.message.include?("requested PHP extension")
             extensions = error.message.scan(/\sext\-.*?\s/).map(&:strip).uniq
+            extensionsWithVersions = error.message.scan(/\sext\-.*? .*?\s/).map(&:strip).uniq
             msg = "Dependabot's installed extensions didn't match those "\
                   "required by your application.\n\n"\
                   "Please add the following extensions to the platform "\
@@ -167,7 +176,7 @@ module Dependabot
                   "The full error raised was:\n\n#{error.message}"
             raise Dependabot::DependencyFileMissingExtension.new(
               msg,
-              extensions
+              extensionsWithVersions
             )
           elsif error.message.include?("package requires php") ||
                 error.message.include?("cannot require itself") ||
