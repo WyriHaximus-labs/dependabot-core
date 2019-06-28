@@ -100,7 +100,7 @@ module Dependabot
 
           composer_platform_extensions.each do |extension|
             json["config"] = {} if json["config"].nil? == true
-            json["config"]["platform"] = {} json["config"].include? "platform" == false
+            json["config"]["platform"] = {} if json["config"].include? "platform" == false
             json["config"]["platform"][extension] = "0.0.1"
           end
 
