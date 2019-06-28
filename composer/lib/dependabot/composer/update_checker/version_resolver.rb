@@ -99,11 +99,10 @@ module Dependabot
           json = JSON.parse(content)
 
           composer_platform_extensions.each do |extension|
-            if json["config"].nil? == true || json.include? "config" == false
+            if json["config"].nil? == true
               json["config"] = {}
             end
-            if json["config"]["platform"].nil? == true || 
-               json["config"].include? "platform" == false
+            if json["config"].include? "platform" == false
               json["config"]["platform"] = {}
             end
             json["config"]["platform"][extension] = "0.0.1"
