@@ -193,7 +193,7 @@ RSpec.describe Dependabot::Composer::UpdateChecker do
             context "it pretends the missing extension is there" do
               it {
                 is_expected.to be >=
-                Dependabot::Composer::Version.new("5.4.36")
+                               Dependabot::Composer::Version.new("5.4.36")
               }
             end
           end
