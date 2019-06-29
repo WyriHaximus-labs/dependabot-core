@@ -173,7 +173,9 @@ module Dependabot
                   "The full error raised was:\n\n#{error.message}"
             raise Dependabot::DependencyFileMissingExtension.new(
               msg,
-              extensions_with_versions.map { |string| string.split(" ").join("|").gsub("*", "0.0.1") }
+              extensions_with_versions.map { |string| string.split(" ")
+                                      .join("|")
+                                      .gsub("*", "0.0.1") }
             )
           elsif error.message.include?("package requires php") ||
                 error.message.include?("cannot require itself") ||
