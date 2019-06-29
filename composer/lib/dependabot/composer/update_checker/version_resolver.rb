@@ -102,12 +102,9 @@ module Dependabot
             json["config"] = {} if json["config"].nil? == true
             bool = json["config"].include? "platform"
             json["config"]["platform"] = {} if bool == false
-            extension = extension_with_version.split(" ").at(0)
-            extension_version = extension_with_version.split(" ").at(1)
-            extension_version = "0.0.1" if extension_version == "*"
-            extension_version = extension_version.gsub(/[^0-9,\.]/, "")
+            extension = extension_with_version.split("|").at(0)
+            extension_version = extension_with_version.split("|").at(1)
             json["config"]["platform"][extension] = extension_version
-            pp
           end
 
           JSON.generate(json)
@@ -176,7 +173,7 @@ module Dependabot
                   "The full error raised was:\n\n#{error.message}"
             raise Dependabot::DependencyFileMissingExtension.new(
               msg,
-              extensions_with_versions
+              extensions_with_versions.map { |string| string.split(" ").join("|").gsub("*", "0.0.1") }
             )
           elsif error.message.include?("package requires php") ||
                 error.message.include?("cannot require itself") ||

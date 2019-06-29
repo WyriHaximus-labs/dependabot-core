@@ -51,7 +51,8 @@ class Updater
         if (count($extensions) > 0) {
             $platform = [];
             foreach ($extensions as $extension) {
-                $platform[$extension] = '0.0.5';
+                [$extension, $version] = explode('|', $extension);
+                $platform[$extension] = $version;
             }
 
             $config->merge(
